@@ -29,3 +29,50 @@ orgs_flat[:5]
 org_freq = Counter(orgs_flat)
 org_freq.most_common(10)
 
+model = flair.models.TextClassifier.load('en-sentiment')
+
+
+def get_sentiment(text):
+    sentence = flair.data.Sentence(text)
+    model.predict(sentence)
+    sentiment = sentence.labels[0]
+    return sentiment
+
+data['sentiment'] = data['selftext'].apply(get_sentiment)
+
+
+sentiment = {}
+
+for  i, row in data.iterrows():
+    direction = row['sentiment'].value
+    score = row['sentiment'].score
+    for org in row['organizations']:
+        if org not in sentiment.keys():
+            sentiment[org] = {'POSITIVE': [], 'NEGATIVE': []}
+        sentiment[org][direction].append(score)
+
+
+avg_sentiment = []
+
+for org in sentiment.keys():
+    freq_pos = len(sentiment[org]['POSITIVE'])
+    freq_neg = len(sentiment[org]['NEGATIVE'])
+    for direction in ['POSITIVE', 'NEGATIVE']:
+        score = sentiment[org][direction]
+        if len(score) == 0:
+            sentiment[org][direction] = 0.0
+        else:
+            sentiment[org][direction] = sum(score)/len(score)
+    avg = sentiment[org]['POSITIVE'] - sentiment[org]['NEGATIVE']
+    avg_sentiment.append({
+        'enity': org,
+        'positive': sentiment[org]['POSITIVE'],
+        'negative': sentiment[org]['NEGATIVE'],
+        'freq': freq_pos + freq_neg,
+        'score': avg
+    })
+
+sentiment_df = pd.DataFrame(avg_sentiment)
+sentiment_df = sentiment_df[sentiment_df['freq'] > 3]
+sentiment_df.sort_values('score', ascending=False).head(10)
+print(sentiment_df.head())

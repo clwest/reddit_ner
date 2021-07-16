@@ -1,9 +1,11 @@
 import requests
 import time
 import pandas as pd
+import os
 
-client_id = 'Bz40yQZ_bqx92Q'
-secret_token = 'HtO5GNrspC_HaldP76SmBel0erv66Q'
+client_id =  os.getenv("CLIENT_ID")
+secret_token = os.getenv("SECRET_TOKEN")
+
 
 with open('pass.txt', 'r') as fp:
     pwd = fp.read()
