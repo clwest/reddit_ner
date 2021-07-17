@@ -4,8 +4,8 @@ import flair
 from collections import  Counter
 
 nlp = spacy.load('en_core_web_sm')
-
 data = pd.read_csv('./data/cryptomoonshots.csv', sep='|')
+model = flair.models.TextClassifier.load('en-sentiment')
 
 def get_orgs(text):
     try:
@@ -29,7 +29,7 @@ orgs_flat[:5]
 org_freq = Counter(orgs_flat)
 org_freq.most_common(10)
 
-model = flair.models.TextClassifier.load('en-sentiment')
+
 
 
 def get_sentiment(text):
@@ -75,4 +75,4 @@ for org in sentiment.keys():
 sentiment_df = pd.DataFrame(avg_sentiment)
 sentiment_df = sentiment_df[sentiment_df['freq'] > 3]
 sentiment_df.sort_values('score', ascending=False).head(10)
-print(sentiment_df.head())
+sentiment_df.head()
